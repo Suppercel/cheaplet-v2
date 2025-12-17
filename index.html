@@ -16,6 +16,7 @@
         .logo { font-size: 24px; font-weight: bold; display: flex; align-items: center; cursor: pointer; transition: transform 0.3s; }
         .logo:hover { transform: scale(1.05); }
         .logo span { color: #FFD700; }
+        .logo a { color: inherit; text-decoration: none; display: flex; align-items: center; } /* Added link style */
         nav ul { display: flex; list-style: none; }
         nav ul li { margin-left: 20px; }
         nav ul li a { color: white; text-decoration: none; font-weight: 500; transition: opacity 0.3s; }
@@ -82,24 +83,12 @@
         .condition-tag.new { background-color: #e8f5e9; color: #2E7D32; }
         .no-listings-message { grid-column: 1 / -1; text-align: center; padding: 40px; color: #777; }
 
-        /* Footer */
-        footer { background: linear-gradient(135deg, #2E7D32 0%, #1b5e20 100%); color: white; padding: 40px 0 20px; margin-top: 40px; }
-        .footer-content { display: grid; grid-template-columns: 1fr; gap: 30px; margin-bottom: 30px; text-align: center; }
-        .footer-column h3 { margin-bottom: 15px; font-size: 1.2rem; }
-        .footer-column ul { list-style: none; }
-        .footer-column ul li { margin-bottom: 10px; }
-        .footer-column ul li a { color: #ddd; text-decoration: none; transition: color 0.3s; }
-        .footer-column ul li a:hover { color: white; }
-        .copyright { text-align: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; color: #ccc; }
-
-        /* Firebase forms */
+        /* Firebase forms general styles (needed for Listing form) */
         .firebase-form-section { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin: 30px auto; max-width: 500px; text-align: center; }
         .firebase-form-section h2 { margin-bottom: 25px; color: #333; }
         .firebase-form-section input, .firebase-form-section textarea, .firebase-form-section select { margin: 10px auto; width: 100%; max-width: 350px; }
         .form-buttons { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
-        .firebase-form-section #auth-error { margin-top: 15px; font-weight: 500; color: red; }
         .form-field-error { color: red; font-size: 0.85rem; text-align: left; margin: -5px auto 10px; max-width: 350px; }
-        #password-feedback { font-size: 0.85rem; margin-top: 5px; height: 15px; }
         
         /* Image Uploader */
         #image-uploader { margin: 10px auto; max-width: 350px; }
@@ -141,19 +130,20 @@
 <body>
     <header>
         <div class="container header-content">
-            <div class="logo" id="logo-link">Cheap<span>let</span></div>
+            <div class="logo">
+                <a href="index.html">Cheap<span>let</span></a>
+            </div>
             <nav>
                 <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/my-listings">My Listings</a></li>
-                    <li><a href="/messages">Messages</a></li>
-                    <li><a href="/profile">My Profile</a></li>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#">My Listings</a></li>
+                    <li><a href="#">Messages</a></li>
                 </ul>
             </nav>
             <div class="header-auth-buttons">
                 <span id="userEmailDisplay" style="display: none;">Welcome!</span>
-                <button class="btn" id="listAnItemBtn" style="display: none;">List an Item</button>
-                <button class="btn" id="loginRegisterBtn" style="display: inline-block;">Login / Register</button>
+                <button class="btn" id="listAnItemBtn">List an Item</button>
+                <button class="btn" id="loginRegisterBtn">Login / Register</button>
                 <button class="btn" id="logoutBtn" style="display: none;">Logout</button>
             </div>
         </div>
@@ -180,27 +170,8 @@
     </section>
 
     <main class="container">
-        <!-- AUTH FORM -->
-        <section id="auth-forms" class="firebase-form-section" style="display: none;">
-            <h2>Log In to Cheaplet</h2>
-            <p>Please log in or register to continue.</p>
-            <div id="register-name-fields" style="display: none;">
-                <input type="text" id="firstName" placeholder="First Name" required>
-                <input type="text" id="lastName" placeholder="Last Name" required>
-            </div>
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Password (min. 6 characters)" required>
-            <p id="password-feedback" style="display: none;"></p>
-            <div class="form-buttons">
-                <button class="btn" id="loginBtn">Login</button>
-                <button class="btn" id="registerBtn" style="display: none;">Register</button>
-                <button class="btn btn-secondary" id="cancelAuthFormBtn">Cancel</button>
-            </div>
-            <p id="auth-error"></p>
-            <p style="margin-top: 15px;"><a href="#" id="toggleAuthMode">New user? Register here.</a></p>
-        </section>
-
-        <!-- LISTING FORM -->
+        
+        <!-- LISTING FORM (Initially Hidden) -->
         <section id="listing-form" class="firebase-form-section" style="display: none;">
             <h2>List a New Item</h2>
             <input type="text" id="listing-title" placeholder="Item Title (e.g., Vintage Coffee Table)" required>
@@ -314,55 +285,36 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, sendEmailVerification } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, where, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-analytics.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, where, doc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
 
         async function main() {
             
             // -------------------------------------------------------------
-            // STEP 1: PASTE YOUR KEYS HERE!
+            // PASTE YOUR KEYS HERE (SAME AS BEFORE)
             // -------------------------------------------------------------
-            
-            // Go to Firebase Console -> Project Settings -> General -> Your Apps -> "SDK Setup and Configuration"
             const firebaseConfig = {
-                apiKey: "AIzaSyC03fbsmA7O8Puub_rjIYaixp5lbsjCBm4",
-                authDomain: "cheaplet-v2.firebaseapp.com",
-                projectId: "cheaplet-v2",
-                storageBucket: "cheaplet-v2.firebasestorage.app",
-                messagingSenderId: "910761481670",
-                appId: "1:910761481670:web:44226b04d27b3f3ed78ec7"
-            };
+apiKey: "AIzaSyC03fbsmA7O8Puub_rjIYaixp5lbsjCBm4",
+authDomain: "cheaplet-v2.firebaseapp.com",
+projectId: "cheaplet-v2",
+storageBucket: "cheaplet-v2.firebasestorage.app",
+messagingSenderId: "910761481670",
+appId: "1:910761481670:web:44226b04d27b3f3ed78ec7"
+};
 
-            // Go to Cloudinary Dashboard -> Account Details & Settings -> Upload Presets
-            const CLOUDINARY_CLOUD_NAME = "di9yigyd4";
-            const CLOUDINARY_UPLOAD_PRESET = "Cheaplet"; 
+// Go to Cloudinary Dashboard -> Account Details & Settings -> Upload Presets
+const CLOUDINARY_CLOUD_NAME = "di9yigyd4";
+const CLOUDINARY_UPLOAD_PRESET = "Cheaplet";
             
             // -------------------------------------------------------------
-            // END OF KEY SECTION
-            // -------------------------------------------------------------
-
+            
             const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
-            // Initialize Firebase
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
             const db = getFirestore(app);
-            // const analytics = getAnalytics(app); // Optional: Uncomment if you enabled Analytics
 
             // DOM Elements
-            const authFormsSection = document.getElementById('auth-forms');
-            const registerNameFields = document.getElementById('register-name-fields');
-            const firstNameInput = document.getElementById('firstName');
-            const lastNameInput = document.getElementById('lastName');
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const passwordFeedback = document.getElementById('password-feedback');
-            const loginBtn = document.getElementById('loginBtn');
-            const registerBtn = document.getElementById('registerBtn');
-            const authError = document.getElementById('auth-error');
-            const toggleAuthModeLink = document.getElementById('toggleAuthMode');
-            const cancelAuthFormBtn = document.getElementById('cancelAuthFormBtn');
             const listingFormSection = document.getElementById('listing-form');
             const listingTitleInput = document.getElementById('listing-title');
             const listingDescriptionInput = document.getElementById('listing-description');
@@ -376,7 +328,6 @@
             const postListingBtn = document.getElementById('postListingBtn');
             const listingsContainer = document.getElementById('listings-container');
             const itemCountSpan = document.getElementById('itemCount');
-            const logoLink = document.getElementById('logo-link');
             const loginRegisterBtn = document.getElementById('loginRegisterBtn');
             const listAnItemBtn = document.getElementById('listAnItemBtn');
             const logoutBtn = document.getElementById('logoutBtn');
@@ -387,34 +338,13 @@
             const searchInput = document.getElementById('search-input');
             const mainContentSections = [ document.querySelector('.hero'), document.querySelector('.categories'), document.querySelector('.filters'), document.querySelector('.listings'), document.querySelector('.how-it-works') ];
             
-            let isLoginMode = true;
             let selectedFiles = [];
             const maxFiles = 5;
 
             // View Management
             function setMainContentVisibility(show) { mainContentSections.forEach(section => { if (section) section.style.display = show ? 'block' : 'none'; }); }
-            function returnToMainView() { setMainContentVisibility(true); authFormsSection.style.display = 'none'; listingFormSection.style.display = 'none'; }
-            function toggleAuthFormVisibility(show) { setMainContentVisibility(!show); listingFormSection.style.display = 'none'; authFormsSection.style.display = show ? 'block' : 'none'; }
-            function toggleListingFormVisibility(show) { setMainContentVisibility(!show); authFormsSection.style.display = 'none'; listingFormSection.style.display = show ? 'block' : 'none'; }
-            
-            function updateAuthModeUI() {
-                if (isLoginMode) {
-                    loginBtn.style.display = 'inline-block';
-                    registerBtn.style.display = 'none';
-                    registerNameFields.style.display = 'none';
-                    toggleAuthModeLink.textContent = 'New user? Register here.';
-                    authFormsSection.querySelector('h2').textContent = 'Log In to Cheaplet';
-                    passwordFeedback.style.display = 'none';
-                } else {
-                    loginBtn.style.display = 'none';
-                    registerBtn.style.display = 'inline-block';
-                    registerNameFields.style.display = 'block';
-                    toggleAuthModeLink.textContent = 'Already have an account? Log in.';
-                    authFormsSection.querySelector('h2').textContent = 'Register for Cheaplet';
-                    passwordFeedback.style.display = 'block';
-                }
-                authError.textContent = '';
-            }
+            function returnToMainView() { setMainContentVisibility(true); listingFormSection.style.display = 'none'; }
+            function toggleListingFormVisibility(show) { setMainContentVisibility(!show); listingFormSection.style.display = show ? 'block' : 'none'; }
             
             // Image Handling
             function renderPreviews() {
@@ -460,39 +390,31 @@
             // Authentication Listener
             onAuthStateChanged(auth, user => {
                 if (user && user.emailVerified) {
-                    // User is logged in and verified
-                    returnToMainView();
                     userEmailDisplay.textContent = user.displayName ? `Welcome, ${user.displayName}!` : `Welcome!`;
                     userEmailDisplay.style.display = 'block';
                     loginRegisterBtn.style.display = 'none';
                     logoutBtn.style.display = 'inline-block';
-                    listAnItemBtn.style.display = 'inline-block';
-                } else if (user && !user.emailVerified) {
-                    // User logged in but not verified
-                    userEmailDisplay.style.display = 'none';
-                    loginRegisterBtn.style.display = 'inline-block';
-                    logoutBtn.style.display = 'none';
-                    listAnItemBtn.style.display = 'none';
                 } else {
-                    // User logged out
                     userEmailDisplay.style.display = 'none';
                     loginRegisterBtn.style.display = 'inline-block';
                     logoutBtn.style.display = 'none';
-                    listAnItemBtn.style.display = 'none';
                 }
             });
 
             // Post Listing Action
             postListingBtn.addEventListener('click', async () => {
                 const user = auth.currentUser;
-                if (!user) { alert('You must be logged in to post an item.'); toggleAuthFormVisibility(true); return; }
+                if (!user) { 
+                    alert('You must be logged in to post an item.'); 
+                    window.location.href = 'LogIntoCheaplet.html'; // REDIRECT IF NOT LOGGED IN
+                    return; 
+                }
                 if (!validateListingForm()) return;
                 
                 postListingBtn.disabled = true; 
                 postListingBtn.textContent = 'Uploading...';
                 
                 try {
-                    // Upload images to Cloudinary
                     const uploadPromises = selectedFiles.map(file => {
                         const formData = new FormData();
                         formData.append('file', file);
@@ -505,7 +427,6 @@
                     
                     postListingBtn.textContent = 'Saving Listing...';
                     
-                    // Save to Firestore
                     await addDoc(collection(db, 'listings'), {
                         title: listingTitleInput.value.trim(), 
                         description: listingDescriptionInput.value.trim(),
@@ -534,12 +455,10 @@
                 }
             });
             
-            // Render a Single Card
             function renderListing(listingDoc) {
                 const data = listingDoc.data();
                 const listingLink = document.createElement('a');
                 listingLink.className = 'listing-card';
-                // Note: We use # here for simplicity, but you could create a listing.html page later
                 listingLink.href = `#`; 
                 listingLink.onclick = (e) => { e.preventDefault(); alert("Detailed listing view would go here!"); };
                 
@@ -569,7 +488,6 @@
                 return listingLink;
             }
             
-            // Fetch Listings
             let unsubscribe;
             function fetchAndRenderListings() {
                 if (unsubscribe) unsubscribe();
@@ -601,15 +519,23 @@
             }
 
             // Event Listeners
-            loginRegisterBtn.addEventListener('click', () => { isLoginMode = true; updateAuthModeUI(); toggleAuthFormVisibility(true); });
-            listAnItemBtn.addEventListener('click', () => { if (auth.currentUser) { toggleListingFormVisibility(true); } else { alert('Please log in to list an item.'); isLoginMode = true; updateAuthModeUI(); toggleAuthFormVisibility(true); } });
+            loginRegisterBtn.addEventListener('click', () => { 
+                window.location.href = 'LogIntoCheaplet.html'; 
+            });
+            
+            listAnItemBtn.addEventListener('click', () => { 
+                if (auth.currentUser) { 
+                    toggleListingFormVisibility(true); 
+                } else { 
+                    alert('Please log in to list an item.'); 
+                    window.location.href = 'LogIntoCheaplet.html'; 
+                } 
+            });
+            
             startBrowsingBtn.addEventListener('click', () => { document.querySelector('.filters').scrollIntoView({ behavior: 'smooth' }); });
-            cancelAuthFormBtn.addEventListener('click', returnToMainView);
             document.getElementById('cancelListingFormBtn').addEventListener('click', returnToMainView);
-            logoLink.addEventListener('click', returnToMainView);
             categoryFilter.addEventListener('change', fetchAndRenderListings);
             sortFilter.addEventListener('change', fetchAndRenderListings);
-            toggleAuthModeLink.addEventListener('click', (e) => { e.preventDefault(); isLoginMode = !isLoginMode; updateAuthModeUI(); });
             
             document.querySelectorAll('.category-card').forEach(card => {
                 card.addEventListener('click', (e) => {
@@ -630,42 +556,8 @@
                 e.target.value = ''; 
             });
 
-            loginBtn.addEventListener('click', async () => {
-                authError.textContent = '';
-                try {
-                    const userCredential = await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-                    if (!userCredential.user.emailVerified) {
-                        authError.textContent = 'Please verify your email to log in.';
-                        await signOut(auth);
-                    }
-                } catch (err) { authError.textContent = err.message; }
-            });
-            
-            registerBtn.addEventListener('click', async () => {
-                const firstName = firstNameInput.value.trim();
-                const lastName = lastNameInput.value.trim();
-                if (!firstName || !lastName) { authError.textContent = "Please enter your first and last name."; return; }
-                if (passwordInput.value.length < 6) { authError.textContent = "Password must be at least 6 characters long."; return; }
-                try {
-                    const userCredential = await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-                    const displayName = `${firstName} ${lastName}`;
-                    await updateProfile(userCredential.user, { displayName: displayName });
-                    await sendEmailVerification(userCredential.user);
-                    
-                    // Create user doc
-                    const userDocRef = doc(db, "users", userCredential.user.uid);
-                    await setDoc(userDocRef, { uid: userCredential.user.uid, displayName: displayName, email: userCredential.user.email });
-                    
-                    await signOut(auth);
-                    alert("Registration successful! A verification email has been sent. Please check your inbox, then log in.");
-                    returnToMainView();
-                } catch (error) { authError.textContent = error.message; }
-            });
-            
             logoutBtn.addEventListener('click', () => signOut(auth));
 
-            // Initialize
-            updateAuthModeUI();
             fetchAndRenderListings();
         }
         main();
